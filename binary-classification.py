@@ -88,3 +88,5 @@ normalized_dataset = (
 normalized_dataset['Class'] = rice_dataset['Class']
 
 print(normalized_dataset.head())
+
+keras.utils.set_random_seed(42)
