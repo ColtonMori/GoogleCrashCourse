@@ -156,3 +156,35 @@ def train_model(
     )
 
 print('Defined the create_model and train_model function')
+
+settings = ml_edu.experiment.ExperimentSettings(
+    learning_rate=0.001,
+    number_epochs=60,
+    batch_size=100,
+    classification_threshold=0.35,
+    input_features=input_features,
+)
+
+metrics = [
+    keras.metrics.BinaryAccuracy(
+        name='accuracy', threshold=settings.classification_threshold
+    ),
+    keras.metrics.Precision(
+        name='precision', thresholds=settings.classification_threshold
+    ),
+    keras.metrics.Recall(
+        name='recall', thresholds=settings.classification_threshold
+    ),
+    keras.metrics.AUC(name='auc', curve='ROC', num_thresholds=200),
+]
+
+model = create_model(settings, metrics)
+
+experiment = train_model(
+    'baseline', model, train_featurse, train_labels, settings
+)
+
+ml_edu.results.plot_experiment_metrics(experiment, ['accuracy', 'precision', 'recall'])
+plt.savefig("Accuracy_Precision_Recall.png")
+ml_edu.results.plot_experiment_metrics(experiment, ['auc'])
+plt.savefig("Auc.png")
