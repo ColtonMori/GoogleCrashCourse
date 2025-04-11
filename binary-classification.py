@@ -64,20 +64,6 @@ for x_axis_data, y_axis_data in [
     )
     fig.write_image(f"{x_axis_data}_vs_{y_axis_data}.png")
 
-import plotly.io as pio
-
-pio.write_html(
-    px.scatter_3d(
-        rice_dataset,
-        x='Eccentricity',
-        y='Area',
-        z='Major_Axis_Length',
-        color='Class',
-    ),
-    file="Eccentricity_Area_Major_Axis_Length.html",
-    auto_open=False
-)
-
 feature_mean = rice_dataset.mean(numeric_only=True)
 feature_std = rice_dataset.std(numeric_only=True)
 numerical_features = rice_dataset.select_dtypes('number').columns
@@ -90,3 +76,28 @@ normalized_dataset['Class'] = rice_dataset['Class']
 print(normalized_dataset.head())
 
 keras.utils.set_random_seed(42)
+
+normalized_dataset['Class_Bool'] = (
+    normalized_dataset['Class'] == 'Cammeo'
+).astype(int)
+normalized_dataset.sample(10)
+
+number_samples = len(normalized_dataset)
+index_80th = round(number_samples * 0.8)
+index_90th = index_80th + round(number_samples * 0.1)
+
+shuffled_dataset = normalized_dataset.sample(frac=1, random_state=100)
+train_data = shuffled_dataset.iloc[0:index_80th]
+validation_data = shuffled_dataset.iloc[index_80th:index_90th]
+test_data = shuffled_dataset.iloc[index_90th:]
+
+print(test_data.head())
+
+label_columns = ['Class', 'Class_Bool']
+
+train_featurse = train_data.drop(columns=label_columns)
+train_labels = train_data['Class_bool'].to_numpy()
+validation_labels = validation_data.drop(columns=label_columns)
+validation_labels = validation_data['Class_bool'].to_numpy()
+test_features = test_data.drop(columns=label_columns)
+test_labels = test_data['Class_bool'].to_numpy()
