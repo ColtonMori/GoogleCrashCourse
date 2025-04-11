@@ -96,14 +96,63 @@ print(test_data.head())
 label_columns = ['Class', 'Class_Bool']
 
 train_featurse = train_data.drop(columns=label_columns)
-train_labels = train_data['Class_bool'].to_numpy()
+train_labels = train_data['Class_Bool'].to_numpy()
 validation_labels = validation_data.drop(columns=label_columns)
-validation_labels = validation_data['Class_bool'].to_numpy()
+validation_labels = validation_data['Class_Bool'].to_numpy()
 test_features = test_data.drop(columns=label_columns)
-test_labels = test_data['Class_bool'].to_numpy()
+test_labels = test_data['Class_Bool'].to_numpy()
 
 input_features = [
     'Eccentricity',
     'Major_Axis_Length',
     'Area',
 ]
+
+def create_model(
+    settings: ml_edu.experiment.ExperimentSettings,
+    metrics: list[keras.metrics.Metric],
+) -> keras.Model:
+    model_inputs = [
+        keras.Input(name=feature, shape=(1,))
+        for feature in settings.input_features
+    ]
+
+    concatenated_inputs = keras.layers.Concatenate()(model_inputs)
+    model_output = keras.layers.Dense(
+        units = 1, name='dense_layer', activation=keras.activations.sigmoid
+    )(concatenated_inputs)
+    model = keras.Model(inputs=model_inputs, outputs=model_output)
+    model.compile(
+        optimizer=keras.optimizers.RMSprop(settings.learning_rate),
+        loss=keras.losses.BinaryCrossentropy(),
+        metrics=metrics,
+    )
+    return model
+
+def train_model(
+    experiment_name: str,
+    model: keras.Model,
+    dataset: pd.DataFrame,
+    labels: np.ndarray,
+    settings: ml_edu.experiment.ExperimentSettings,
+) -> ml_edu.experiment.Experiment:
+    features = {
+        feature_name: np.array(dataset[feature_name])
+        for feature_name in settings.input_features
+    }
+
+    history = model.fit(
+        x=features,
+        y=labels,
+        batch_size=settings.batch_size,
+        epochs=settings.number_epochs,
+    )
+    return ml_edu.experiment.Experiment(
+        name=experiment_name,
+        settings=settings,
+        model=model,
+        epochs=history.epoch,
+        metrics_history=pd.DataFrame(history.history)
+    )
+
+print('Defined the create_model and train_model function')
