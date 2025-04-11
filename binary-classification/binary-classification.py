@@ -251,3 +251,9 @@ test_metrics_all_features = experiment_all_features.evaluate(
     test_features, test_labels
 )
 compare_train_test(experiment_all_features, test_metrics_all_features)
+
+ml_edu.results.compare_experiment([experiment, experiment_all_features],
+                                  ['accuracy', 'auc'],
+                                  test_features, test_labels
+)
+plt.savefig("Compare_Experiment.png")
