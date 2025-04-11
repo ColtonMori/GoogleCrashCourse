@@ -101,3 +101,9 @@ validation_labels = validation_data.drop(columns=label_columns)
 validation_labels = validation_data['Class_bool'].to_numpy()
 test_features = test_data.drop(columns=label_columns)
 test_labels = test_data['Class_bool'].to_numpy()
+
+input_features = [
+    'Eccentricity',
+    'Major_Axis_Length',
+    'Area',
+]
