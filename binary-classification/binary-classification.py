@@ -188,3 +188,66 @@ ml_edu.results.plot_experiment_metrics(experiment, ['accuracy', 'precision', 're
 plt.savefig("Accuracy_Precision_Recall.png")
 ml_edu.results.plot_experiment_metrics(experiment, ['auc'])
 plt.savefig("Auc.png")
+
+def compare_train_test(experiment: ml_edu.experiment.Experiment, test_metrics: dict[str, float]):
+    print('Comparing metrics between train and test:')
+    for metric, test_value in test_metrics.items():
+        print('------')
+        print(f'Train {metric}: {experiment.get_final_metric_value(metric):.4f}')
+        print(f'Test {metric}: {test_value:.4f}')
+
+test_metrics = experiment.evaluate(test_features, test_labels)
+compare_train_test(experiment, test_metrics)
+
+all_input_features = [
+    'Eccentricity',
+    'Major_Axis_Length',
+    'Minor_Axis_Length',
+    'Area',
+    'Convex_Area',
+    'Perimeter',
+    'Extent',
+]
+
+settings_all_features = ml_edu.experiment.ExperimentSettings(
+    learning_rate=0.001,
+    number_epochs=60,
+    batch_size=100,
+    classification_threshold=0.5,
+    input_features=all_input_features,
+)
+
+metrics_all_features = [
+    keras.metrics.BinaryAccuracy(
+        name='accuracy', threshold=settings_all_features.classification_threshold
+    ),
+    keras.metrics.Precision(
+        name='precision', thresholds=settings_all_features.classification_threshold
+    ),
+    keras.metrics.Recall(
+        name='recall', thresholds=settings_all_features.classification_threshold
+    ),
+    keras.metrics.AUC(name='auc', curve='ROC', num_thresholds=200),
+]
+
+model_all_features = create_model(settings_all_features, metrics_all_features)
+
+experiment_all_features = train_model(
+    'all_features',
+    model_all_features,
+    train_featurse,
+    train_labels,
+    settings_all_features,
+)
+
+ml_edu.results.plot_experiment_metrics(
+    experiment_all_features, ['accuracy', 'precision', 'recall']
+)
+plt.savefig("Accuracy_Precision_Recall_all_features.png")
+ml_edu.results.plot_experiment_metrics(experiment_all_features, ['auc'])
+plt.savefig("Auc_all_features.png")
+
+test_metrics_all_features = experiment_all_features.evaluate(
+    test_features, test_labels
+)
+compare_train_test(experiment_all_features, test_metrics_all_features)
